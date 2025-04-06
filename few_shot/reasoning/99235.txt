@@ -1,0 +1,12 @@
+Standardized Issue Summary:
+The provided C program defines a main function where a static pointer ptr is initialized to (char*)1. The code decrements the pointer (--ptr) and then checks its truth value in an if statement. If the pointer is non-null, it returns 1; otherwise, it returns 0.
+
+User Intent vs. Compiler Behavior:
+- User Expectation: The user expects that the pointer check in the code should not be altered by optimizations. 
+- Actual Compiler Behavior: With the -O1 optimization level, the compiler appears to erroneously remove or alter the null pointer check for the static pointer.  
+
+Gap Analysis:
+The user assumes the if-check is executed whether optimization activated, but -O1+ optimization eliminates the check unreliable.
+
+Summary:
+The compiler assumes that the pointer will still be valid after arithmetics, so eliminated the if-check. Actual introducing a bug.

@@ -1,0 +1,12 @@
+Standardized Issue Summary:
+The user reports a security issue in code after compilation. The code defines `LEN_SUFFIX` with a trailing semicolon (`#define LEN_SUFFIX 8;`), leading to a syntax error during macro expansion (`len_buffer + 8;`). The subsequent logic checks for integer overflow via `if (len < len_buffer)` and allocates memory with `malloc((size_t)len * 2)`. The compiler likely ignores the invalid semicolon (treating it as an empty statement) and compiles the code, but the overflow check is unreliable due to undefined behavior (UB) in signed integer overflow.  
+
+User Intent vs. Compiler Behavior:
+- User Expectation: The code should detect overflow via `if (len < len_buffer)` and prevent unsafe memory allocation.  
+- Actual Compiler Behavior: The trailing semicolon in `LEN_SUFFIX` is parsed as an empty statement, allowing compilation. The overflow check is subject to UB (C11 §6.5/5), enabling optimizations that may remove the check.  
+
+Gap Analysis:
+The user assumes the overflow check is valid, but signed integer overflow is UB, making the check unreliable. The compiler’s optimization may eliminate the check entirely.  
+
+Summary:
+The compiler's No-UB assumption eliminated the if-check, so the malloc below is insecure. The compiler actually introduced a security bug.

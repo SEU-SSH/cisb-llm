@@ -1,0 +1,12 @@
+Standardized Issue Summary:
+The user reports that `__builtin_memcpy` in GCC 12.2.1 generates incorrect code when copying overlapping memory regions.
+
+User Intent vs. Compiler Behavior:
+- User Expectation: Copying overlapping memory regions via `__builtin_memcpy` (or struct assignments that compile to it) should behave identically to standard `memcpy`, preserving data integrity. 
+- Actual Compiler Behavior: `__builtin_memcpy` assumes non-overlapping regions (per C/C++ standard `memcpy` requirements). Overlapping invocations trigger undefined behavior (UB), allowing the compiler to generate incorrect code. GCC 12.2.1 likely applies optimizations (e.g., inlined vector instructions) that fail for overlapping cases. 
+
+Gap Analysis:
+The user assumes `__builtin_memcpy` handles overlapping regions like `memmove`, but it adheres to `memcpy` semantics, which forbid overlap. The compiler's optimization for struct copies (using `__builtin_memcpy`) is valid under the standard but produces unintended results due to overlapping source/destination.  
+
+Summary:
+The report highlights UB-triggered miscompilation but does not identify a compiler bug. The compiler did not actually introduce a security bug.
