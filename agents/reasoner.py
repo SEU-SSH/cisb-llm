@@ -22,21 +22,22 @@ class Reasoner(Agent):
         self.template = {
             'static': {
                 'role': 'You are an expert in the field of software and system security.',
-                'task': 'Your task is to analyse a bug report excerpt from a platform like GCC Bugzilla, determine whether compiler introduced a CISB.',
-                'definition': 'If the compiler\'s optimization induced a security-related bug in the code, then it is CISB.',
-                'description': 'The report will contain bug id, title, digested description and code, formed as a json.',
-                'requirement': 'Please be careful not to overthink, nor do you need to suggest anything.'
+                'task': 'Your task is to analyse a bug report excerpt from a platform like GCC Bugzilla, determine whether the code contains [CISB].',
+                # 'definition': '\n[CISB Definition]\n If the compiler\'s optimization induced a security-related bug in the code, then it is CISB.',
+                'description': '\n[Bug Report Structure]\n The report will contain bug id, title, digested description and code, formed as a json.',
+                'requirement': '\n[Requirement 1]\n Please be careful not to overthink, nor do you need to suggest anything.'
             },
             'CoT': {
                 'beginning': 'Let us think step by step.',
                 #'draw problem desc': 'Firstly, you need to rephrase the situation described by the reporter as a standardized expression in the computer industry, summarizing its issues within 100 words. If the amount of information in the first comment is too low or the content is confusing, end the inference directly and report the exception.',
                 'user expecting behavior': 'First, You need to infer the intention based on the desciptions and code in the digest, and analyze the expection of the user.',
                 'compiler behavior': 'Then, focus on the code and output results to obtain the actual behavior of the compiler. For example, whether the compiler has optimizations, what platform it is applied to, and what version it is.',
-                'problem analysis': 'Summary the gap between expectations and reality based on the above information.',
-                'primary label': 'After analyzing the problem, try to judge if compiler induced a CISB.',
+                'problem analysis': 'Summary the gap between user valid expectations and assumption of compiler optimization based on the above information.',
+                'gap analysis': 'If the reported bug is caused by the gap, and it may have security implications(such as check removed, endless loop, etc.), then it is a [CISB].',
+                'primary label': 'After analyzing the problem, try to judge if CISB exists.',
                 'early termination': 'If you cannot draw a determinative conclusion, please end the inference directly and report the exception.',
-                'emphasis': 'Remember we do not care if compiler contains a bug, but if the bug in code is introduced by compiler.',
-                'reduce hallucination': 'User\'s code is not necessarily valid according to language standards, nor his expectation. So Your reasoning do not need to rely on his expectations.'
+                'emphasis': '\n[Requirement 2]\n Remember we do not care if compiler contains a bug, but if the CISB exists in the code.',
+                'reduce hallucination': '\n[Requirement 3]\n User\'s code is not necessarily valid according to language standards, nor his expectation. So Your reasoning do not need to rely on his expectations.'
                 #'summarize and suggest': 'In the end, summarize the information and effectiveness provided by the bug report in one to two sentences, and point out the best practices.'
             }
         }
