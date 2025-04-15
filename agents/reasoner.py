@@ -33,9 +33,9 @@ class Reasoner(Agent):
                 'user expecting behavior': 'First, You need to infer the intention based on the desciptions and code in the digest, and analyze the expection of the user.',
                 'compiler behavior': 'Then, focus on the code and output results to obtain the actual behavior of the compiler. For example, whether the compiler has optimizations, what platform it is applied to, and what version it is.',
                 'problem analysis': 'Summary the gap between user valid expectations and assumption of compiler optimization based on the above information.',
-                'gap analysis': 'If the reported bug is caused by the gap, and it may have security implications(such as check removed, endless loop, etc.), then it is a [CISB].',
+                'gap analysis': 'If the reported bug is caused by the gap, and it has caused security implications(such as check removed, endless loop, etc.), then it is a [CISB].',
                 'primary label': 'After analyzing the problem, try to judge if CISB exists.',
-                'early termination': 'If the report lacks source code, please end the inference directly and report the exception.',
+                'early termination': 'If the report lacks enough source code, please end the inference directly and report the exception.',
                 'emphasis': '\n[Requirement 2]\n Remember we do not care if compiler contains a bug, but if the CISB exists in the code.',
                 'reduce hallucination': '\n[Requirement 3]\n User\'s code is not necessarily valid according to language standards, nor his expectation. So Your reasoning do not need to rely on his expectations.'
                 #'summarize and suggest': 'In the end, summarize the information and effectiveness provided by the bug report in one to two sentences, and point out the best practices.'
