@@ -37,13 +37,19 @@ class Digestor(Agent):
         return response
     
     def gather_prompt(self, **kwargs):
-        self.prompt = 'You are an expert bug report extraction assistant. Analyze the following bug report and extract key information in JSON format.' \
-        'The report will contain bug id, summary, status, first comment information and some with attachments, formed as a json.' \
+        self.prompt = 'You are an expert bug report extraction assistant. Analyze the given bug report and extract key information in JSON format.' \
+        'The report will contain bug id, summary, status, first comment information, formed as a json. ' \
+        'Rephrase reporter\'s description as a standardized expression in the computer science field.' \
+        'First focus on the provided source code, try to divide it into some logical blocks, summarize their utilities.' \
+        'Then, associate the code with reporter\'s description, conclude user\'s expectation and the differences from it according to the output.' \
         'Output should include following information, constructed as a json: \n{'\
         '\n\t[id]: The bug id of the report.' \
         '\n\t[title]: The title of the report, stored as-is.' \
-        '\n\t[description]: The refined description of the report content. Rephrase reporter\'s description as a standardized expression in the computer science within 100 words. Do not make any inference.' \
-        '\n\t[code]: The code snippet provided in the report or the attachment, stored as-is.\n}' \
+        '\n\t[user expectation]: ' \
+        '\n\t[difference]: ' \
+        '\n\t[code block1]: {[functionality], [code]}\n' \
+        '\n\t[code block2]: {[functionality], [code]}\n' \
+        '\n\t...\n}'
         
     def test(self, bug_id):
         self.gather_prompt()
