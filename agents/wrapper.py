@@ -3,6 +3,7 @@ from digestor import Digestor
 from reasoner import Reasoner
 from evaluator import Evaluator
 from helper import Helper
+from time import sleep
 import json
 
 
@@ -47,4 +48,12 @@ if __name__ == '__main__':
     API_KEY = ''
 
     chater = Wrapper(dmodel, rmodel, None, API_KEY, url)
+    # reports = Helper().read_ids('bug_ids.txt')
+    # print(reports, len(reports))
+    # for report in reports:
+    #     try:
+    #         chater.chat(report.strip())
+    #         sleep(15)  # Avoid rate limit, sleep for 30 seconds between requests
+    #     except Exception as e:
+    #         print(f"Error: {report} chating\n", e)
     chater.chat()

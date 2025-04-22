@@ -4,6 +4,12 @@ class Helper:
     def __init__(self):
         pass
 
+    def read_ids(self, filename = 'bug_ids.txt'):
+        with open(filename, 'r') as f:
+            ids = f.readlines()
+            ids = [x.strip() for x in ids]
+            return ids
+
     def read_bug_report(self, id):
         with open(f'bug_reports.json', 'r') as f:
             data = json.load(f)

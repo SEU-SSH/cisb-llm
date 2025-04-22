@@ -33,7 +33,7 @@ class Reasoner(Agent):
                 'code location': 'First, based on the differences in user descriptions, locate key variables or function calls in the code blocks, trace them according to call chain. Reason about the approximate location which caused the expectation and reality differing.',
                 'compiler behavior': 'Then, focus on the located code block and analyse possible behavior of the compiler. For example, whether the compiler has optimizations, what platform it is applied to, and what version it is.',
                 'problem analysis': 'Summary if there is conflict between user expectations in that block and assumption of compiler optimization it makes. ',
-                'gap analysis': 'If the reported function failure is truly caused by the conflict, and it may have security implications(such as check removed, endless loop, etc.), then it is a CISB.',
+                'gap analysis': 'If the reported function failure is truly caused by the conflict, leading to the reported bug and it may have security implications(such as check removed, endless loop, etc.), then it is a CISB.',
                 'primary label': 'After analyzing the problem, proclaim if CISB exists.',
                 'early termination': 'If the report lacks enough source code, please end the inference directly and report the exception.',
                 'emphasis': '\n[Requirement 2]\n Remember we do not care if compiler contains a bug, but if the CISB exists in the code. Do not blame nor make value judgment.',
