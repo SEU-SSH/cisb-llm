@@ -37,19 +37,19 @@ class Digestor(Agent):
         return response
     
     def gather_prompt(self, **kwargs):
-        self.prompt = 'You are an expert bug report extraction assistant. Analyze the given bug report and extract key information in JSON format.' \
-        'The report will contain bug id, summary, status, first comment information, formed as a json. ' \
-        'Rephrase reporter\'s description as a standardized expression in the computer science field.' \
-        'First focus on the provided source code, try to divide it into some logical blocks, summarize their utilities.' \
-        'Then, associate the code with reporter\'s description, conclude user\'s expectation and the differences from it according to the output.' \
-        'Output should include following information, constructed as a json: \n{'\
-        '\n\t[id]: The bug id of the report.' \
-        '\n\t[title]: The title of the report, stored as-is.' \
-        '\n\t[user expectation]: ' \
-        '\n\t[difference]: ' \
-        '\n\t[code block1]: {[functionality], [code]}\n' \
-        '\n\t[code block2]: {[functionality], [code]}\n' \
-        '\n\t...\n}'
+        self.prompt = """You are an expert bug report extraction assistant. Analyze the given bug report and extract key information in JSON format.
+        \nThe report will contain bug id, summary, status, first comment information, formed as a json. 
+        \nRephrase reporter's description as a standardized expression in the computer science field.
+        \nFirst focus on the provided source code, try to divide it into some logical blocks, summarize their utilities.
+        \nThen, associate the code with reporter's description, conclude user's expectation and the differences from it according to the output.
+        \nOutput should include following information, constructed as a json: \n{
+        [id]: The bug id of the report.
+        [title]: The title of the report, stored as-is.
+        [user expectation]: 
+        [difference]: 
+        [code block1]: {[functionality], [code]}
+        [code block2]: {[functionality], [code]}
+        ...\n}"""
         
     def test(self, bug_id):
         self.gather_prompt()

@@ -43,10 +43,29 @@ class Reasoner(Agent):
         }
 
     def gather_prompt(self, **kwargs):
-        self.prompt = ''
-        for key in kwargs:
-            for k in self.template[key]:
-                self.prompt += self.template[key][k] + '\n'
+        self.prompt = """You are an expert in the field of software and system security.
+        \nYour task is to analyse a bug report excerpt from a platform like GCC Bugzilla, determine whether the code contains [CISB].
+        \n[Bug Report Structure]: The report will contain bug id, title, digested description and code logical blocks, formed as a json.
+        \n[Requirement 1]: Please be careful not to overthink, nor do you need to suggest anything.
+        \n[Requirement 2]: If the report lacks enough source code, please end the inference directly and report the exception.
+        \n[Requirement 3]: Remember we do not care if compiler contains a bug, but if the CISB exists in the code. Do not blame nor make value judgment.
+        \nLet us think step by step.
+        \n[Step 1]: First you need to inspect if the given code conforms to what he issues. If no, terminate early.
+        \n[Step 2]: Based on the differences in user descriptions, locate key variables or function calls in the code blocks, trace them according to call chain. Reason about the approximate location which caused the expectation and reality differing.
+        \n[Step 3]: Focus on the located code block and analyse possible behavior of the compiler. For example, whether the compiler has optimizations, what platform it is applied to, and what version it is.
+        \n[Step 4]: Summary if there is conflict between user expectations in that block and assumption of compiler optimization it makes. 
+        \n[Step 5]: If the reported function failure is truly caused by the conflict, leading to reported bug and it may have security implications(such as check removed, endless loop, etc.), then it is a CISB.
+        \n[Step 6]: After analyzing the problem, proclaim if CISB exists.
+        \nAfter reasoning, answer the following questions with [yes/no] and one sentence explanation:
+        \n1. Does the report include source code? If no, terminate early.
+        \n2. Does the given source code conform to his intention? 
+        \n3. Is the issue an actual bug? 
+        \n4. Caused by the conflict between user expectation and compiler optimization assumption? 
+        \n5. Does the bug have security implications in the context?
+        """
+        # for key in kwargs:
+        #     for k in self.template[key]:
+        #         self.prompt += self.template[key][k] + '\n'
         # return self.prompt
     
     def fetch_example(self, example_filename):

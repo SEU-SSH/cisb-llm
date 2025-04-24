@@ -19,17 +19,18 @@ class Evaluator(Agent):
 
     def gather_prompt(self, **kwargs):
 
-        self.prompt = 'You are an software security expert, evaluate and conclude the result of bug report analysis.' \
-        '\nThe result consists of the longer [Reasoning Process] and the shorter [Generated Summary].' \
-        '\nYou need to reflect the [Reasoning Process] then extract all the reasoning chains and list them clearly.' \
-        '\nThen: ' \
-        '\n1. Conclude the exact optimization behavior within 15 words.'\
-        '\n2. State the security consequences within 15 words' \
-        '\n3. Rephrase the eventual conclusion in one sentence within 15 words.' \
-        '\nAccording to the reflection, you should re-evaulate the bug report analysis and label\'s validity.' \
-        '\nIf the bug is security-related, you should describe the specific scenario. '
-        #'\nIf compiler\'s behavior led to the bug, then consider if the bug is security related.' \
-        '\nIf compiler\'s optimization is based on the No-UB assumption, then the generated code may also contain security implications.'
+        self.prompt = """You are an software security expert, evaluate and check the result of bug report analysis. 
+        \nThe result consists of the longer [Reasoning Process] and the shorter [Generated Summary].
+        \nYou need to reflect the [Reasoning Process] then determine whether CISB exists.
+        \nThen answer the following questions with [yes/no]: 
+        \n1. Does the report include source code? If no, terminate early.
+        \n2. Does the given source code conform to his intention? If no, terminate early.
+        \n3. Is the issue an actually bug? If no, it is not a bug.
+        \n4. Caused by the conflict between user expectation and compiler optimization assumption? If no, it is a programming error.
+        \n5. Does the bug have security implications in the context? If no, it is a compiler bug. If yes, it is a CISB.
+        \nAfter answering the above questions, state whether this bug report reflects a CISB.
+        \nFinal conclusion: [CISB / Not a CISB / Inconclusive due to early termination]
+        """
 
         
     def chat(self, input):
