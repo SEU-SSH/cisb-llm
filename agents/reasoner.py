@@ -45,20 +45,20 @@ class Reasoner(Agent):
     def gather_prompt(self, **kwargs):
         self.prompt = """You are an expert in the field of software and system security.
         \nYour task is to analyse a bug report excerpt from a platform like GCC Bugzilla, determine whether the code contains [CISB].
-        \n[Bug Report Structure]: The report will contain bug id, title, digested description and code logical blocks, formed as a json.
-        \n[Requirement 1]: Please be careful not to overthink, nor do you need to suggest anything.
-        \n[Requirement 2]: If the report lacks enough source code, please end the inference directly and report the exception.
-        \n[Requirement 3]: Remember we do not care if compiler contains a bug, but if the CISB exists in the code. Do not blame nor make value judgment.
-        \nLet us reason about it step by step.
-        \n[Step 1]: First you need to inspect if the given code conforms to what he issues. If no, terminate early.
-        \n[Step 2]: Based on the differences in user descriptions, locate key variables or function calls in the code blocks, trace them according to call chain. Reason about the approximate location which caused the expectation and reality differing.
-        \n[Step 3]: Focus on the located code block and analyse possible behavior of the compiler. For example, whether the compiler has optimizations, what platform it is applied to, and what version it is.
-        \n[Step 4]: Summary if there is conflict between user expectations on the functionality of that block and assumption of compiler optimization it makes. 
-        \n[Step 5]: Judge if the reported function failure is truly caused by the conflict, leading to the reported bug and it may have security implications(such as check removed, endless loop, etc.).
-        \nAfter reasoning, answer the following questions with [yes/no] and one sentence explanation:
+        \n[Bug Report Structure]: The report contains bug id, title, digested description and code logical blocks, formed as json.
+        \n[Requirement 1]: Do not overthink, nor do you need to suggest.
+        \n[Requirement 2]: If lacking enough source code, end the inference directly and report the exception.
+        \n[Requirement 3]: Do not care if compiler contains a bug, but if the CISB exists in the code. Do not blame nor make value judgment.
+        \n\nLet us reason about it step by step.
+        \n[Step 1]: First check if the given code conforms to what he issues. If no, terminate early.
+        \n[Step 2]: Based on the differences in user descriptions, locate key variables or function calls in the code blocks, trace them through call chains. Reason about the approximate location which caused the differences.
+        \n[Step 3]: Focus on the located code block, then analyse possible optimization of the compiler. You must verify your suppose by referencing the common knowledge of compiler optimization.
+        \n[Step 4]: Summary if there is conflict between the expecting functionality of that block and assumption of the confirmed compiler optimization it makes. 
+        \n[Step 5]: Judge if the reported function failure is caused by the conflict, and it may have security implications(such as check removed, endless loop, etc.).
+        \n\nAfter reasoning, answer the following questions with [yes/no] and one sentence explanation:
         \n1. Does the report include source code?
         \n2. Does the given source code conform to his intention? 
-        \n3. Is the issue a runtime bug in the code, not a compilation failure? 
+        \n3. Is the issue a runtime bug by compiler's optimization, not a compilation failure? 
         \n4. Caused by the conflict between user expectation and assumption compiler made to do optimization? 
         \n5. Does the bug have security implications in the context?
         \nIf the questions are all [yes], then it is a CISB.
@@ -101,7 +101,7 @@ class Reasoner(Agent):
                 {"role": "user", "content": str(report)},
         ],
             max_tokens=4096,
-            temperature=0.7,
+            temperature=1.0,
             stream=False
         )
 

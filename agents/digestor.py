@@ -28,7 +28,7 @@ class Digestor(Agent):
                 {"role": "user", "content": str(input)},
         ],
             max_tokens=4096,
-            temperature=0.7,
+            temperature=1.0,
             response_format={'type': 'json_object'},
             stream=False
         )
