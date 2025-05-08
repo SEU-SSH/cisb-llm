@@ -53,15 +53,15 @@ class Reasoner(Agent):
         \n[Step 1]: First check if the given code conforms to what he issues. If no, terminate early.
         \n[Step 2]: Based on the differences in user descriptions, locate key variables or function calls in the code blocks, trace them through call chains. Reason about the approximate location which caused the differences.
         \n[Step 3]: Focus on the located code block, analyse possible optimization done by compiler. Optimization is after tokenization, syntax and semantics phases. Do not rush to a conclusion.
-        \n[Step 4]: Summary if there is conflict between the expecting code functionality and assumption of the compiler optimization it made. 
-        \n[Step 5]: Judge if the reported function failure is caused by the conflict, and it may have security implications(such as check removed, endless loop, etc.). It should not be just side effects.
+        \n[Step 4]: Summary the behavior expected by user on the located code and the actual after compilation, whether it differs. You may refer to the developer review.
+        \n[Step 5]: Judge if the bug is caused by the differences in Step 4, and whether may have security implications. It should not be just side effects.
         \n\nAfter reasoning, answer the following questions with [yes/no] and one sentence explanation:
-        \n1. Combining developer review, did programmer misuse/misunderstand some language or compiler features?
-        \n2. Does the given source code conform to his intention? 
-        \n3. Is the issue a program runtime bug caused by optimization, not a compilation failure in other phases? 
-        \n4. Caused by the conflict between user expectation and assumption compiler made to do optimization? 
-        \n5. Does the bug have direct security implications in the context?
-        \nIf answers are [no, yes, yes, yes, yes], then it is a CISB.
+        \n1. Did compiler accept the code and compile it successfully?
+        \n2. Is this a runtime bug, and caused by optimizing phase, not the others? 
+        \n3. Did the optimization induce the differences in Step 4?
+        \n4. Did the optimization cause unpredictable consequence during execution?
+        \n5. Does the consequence have direct security implications in the context, such as check removed, endless loop, etc.?
+        \nIf answers are all yes, then it is a CISB.
         """
         # for key in kwargs:
         #     for k in self.template[key]:
