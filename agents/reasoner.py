@@ -52,16 +52,17 @@ class Reasoner(Agent):
         \n\nLet us reason about it step by step.
         \n[Step 1]: First check if the given code conforms to what he issues. If no, terminate early.
         \n[Step 2]: Based on the differences in user descriptions, locate key variables or function calls in the code blocks, trace them through call chains. Reason about the approximate location which caused the differences.
-        \n[Step 3]: Focus on the located code block, analyse possible optimization done by compiler. Optimization is after tokenization, syntax and semantics phases. Do not rush to a conclusion.
+        \n[Step 3]: Focus on the located code block, analyse possible optimization done by compiler. Do not rush to a conclusion.
         \n[Step 4]: Summary the behavior expected by user on the located code and the actual after compilation, whether it differs. You may refer to the developer review.
         \n[Step 5]: Judge if the bug is caused by the differences in Step 4, and whether may have security implications. It should not be just side effects.
         \n\nAfter reasoning, answer the following questions with [yes/no] and one sentence explanation:
         \n1. Did compiler accept the code and compile it successfully?
-        \n2. Is this a runtime bug, and caused by optimizing phase, not the others? 
+        \n2. Is this a runtime bug, and caused by optimizing phase, not the others?
         \n3. Did the optimization induce the differences in Step 4?
-        \n4. Did the optimization cause unpredictable consequence during execution?
+        \n4. Did the optimization cause incorrect consequence during execution?
         \n5. Does the consequence have direct security implications in the context, such as check removed, endless loop, etc.?
-        \nIf answers are all yes, then it is a CISB.
+        \n[Exception]: If the compiler specification has an ##EXPLICIT## definition that such program behavior is prohibited and ##NOT JUST## an undefined behavior, then it is ##NOT## CISB.
+        \nIf answers are all [yes] and not excluded by Exception, then it is a CISB.
         """
         # for key in kwargs:
         #     for k in self.template[key]:
