@@ -62,7 +62,7 @@ def save_output(output_dir, data):
 def main():
     # 配置
     commit_file = "commits.txt"  # 包含 commit ID 的文件
-    local_repo_path = "D:/linux"  # 本地内核仓库路径
+    local_repo_path = "/linux"  # 本地内核仓库路径
     output_dir = "."  # 输出目录
     
     # 验证仓库路径
