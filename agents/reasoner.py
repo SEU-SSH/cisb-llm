@@ -83,7 +83,7 @@ class Reasoner(Agent):
             \n[Step 4]: Judge if the issue is caused by the differences in Step 3, and whether may have security implications in kernel context. No matter what the root cause is.
             \n\nAfter reasoning, generate a brief title of the issue. Answer the following questions with [yes/no] and one sentence explanation:
             \n1. Did compiler accept the kernel code and compile it successfully?
-            \n2. Is the issuer reporting a runtime bug, where before code semantic assumption was damaged during optimization or default behavior?
+            \n2. Is the issuer reporting a runtime bug, where previous code semantic assumption was damaged during optimization or default behavior?
             \n3. Without optimization or default behavior, will the difference in Step 3 disappear?
             \n4. Did the program observable behavior change after optimization or default behavior during execution?
             \n5. Does this change have direct or indirect security implications in the context?

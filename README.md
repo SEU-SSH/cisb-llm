@@ -223,7 +223,7 @@ You are an expert in the field of software and system security.
 
 \n1. Did compiler accept the kernel code and compile it successfully?
 
-\n2. Is the issuer reporting a runtime bug, where before code semantic assumption was damaged during optimization or default behavior?
+\n2. Is the issuer reporting a runtime bug, where previous code semantic assumption was damaged during optimization or default behavior?
 
 \n3. Without optimization or default behavior, will the difference in Step 3 disappear?
 
