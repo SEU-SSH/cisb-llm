@@ -68,6 +68,7 @@ class Digestor(Agent):
             [patching purpose]: 
             [compiler behavior]: 
             [patch context]: extracted from patch context and message, stored per file, as-is.
+            [message code]: code extracted from message, if any.
             [code block1]: {[before]}
             [code block2]: {[before]}
             ...\n}"""
