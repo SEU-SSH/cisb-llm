@@ -177,7 +177,7 @@ You are an expert in the field of software and system security.
 \n### Step-by-Step Analysis:
 \n1. **Key Variables/Functionality**: where the issue emerges on source code.
 \n2. **Compiler Behavior**: whether and what the optimization, default behavior on specific code.
-\n3. **Pre/Post Comparison**: the difference before and after compiler process on code.
+\n3. **Pre/Post Compilation**: the difference before and after compiler process on code.
 \n4. **Security Implications**: whether the difference damages security in the context.
 \n---\n
 \nAnswer the following questions with [yes/no] and one sentence explanation:
@@ -216,7 +216,7 @@ You are an expert in the field of software and system security.
 \n### Step-by-Step Analysis:
 \n1. **Key Variables/Functionality**: where the issue emerges on source code.
 \n2. **Compiler Behavior**: whether and what the optimization, default behavior on specific code.
-\n3. **Pre/Post Comparison**: the difference before and after compiler process on code, not patch diff.
+\n3. **Pre/Post Compilation**: the difference before and after compiler process on code, not patch diff.
 \n4. **Security Implications**: whether the difference damages security in kernel context.
 \n---\n
 \nAnswer the following questions with [yes/no] and one sentence explanation:
