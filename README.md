@@ -171,7 +171,7 @@ You are an expert in the field of software and system security.
 \n\nAfter reasoning, you should conclude your reasoning content, then output the analysis results in below structure.
 \n\n**Title**: brief conclusion of the report.
 \n**Issue**: how the program observable behavior differs from user expectation.
-\n**Tag**: classify the report within a phrase. such as code enhance, config fix, etc.
+\n**Tag**: classify the report within a phrase.
 \n**Purpose**: what the report intend to reveal or suggest.
 \n---\n
 \n### Step-by-Step Analysis:
@@ -210,7 +210,7 @@ You are an expert in the field of software and system security.
 \n\nAfter reasoning, you should conclude your reasoning content, then output the analysis results in below structure.
 \n\n**Title**: brief conclusion of the commit.
 \n**Issue**: how the program observable behavior differs from expectation.
-\n**Tag**: classify the commit within a phrase. such as code enhance, config fix, etc.
+\n**Tag**: classify the commit within a phrase. Such as code enhance, config fix, etc.
 \n**Purpose**: what the commit intend to edit or revise.
 \n---\n
 \n### Step-by-Step Analysis:
