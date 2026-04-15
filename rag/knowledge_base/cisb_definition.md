@@ -33,15 +33,7 @@ CISBs are classified using three dimensions:
 2. **Compiler Assumption and Behavior**: The specific assumptions the compiler makes about the code and the resulting "destructive processing" it performs (optimization passes, default behaviors).
 3. **Environment and Security Consequence**: The specific software/hardware environment (including compiler options and runtime conditions) and the subsequent security impact triggered.
 
-## CISB Decision Procedure
-
-The automated detection pipeline uses a 5-question decision procedure. If **all answers are "yes"**, the bug is classified as a CISB:
-
-1. Did the compiler accept the code and compile it successfully?
-2. Is the reported issue a runtime bug, provoked during optimization or default compiler behavior?
-3. Without optimization or default behavior, will the behavioral difference disappear?
-4. Did the program's observable behavior change after optimization or default behavior during execution?
-5. Does this change have direct or indirect security implications in the context?
+## CISB Security Implications
 
 **Direct security implications**: endless loop/program hang, crash, memory corruption.  
 **Indirect security implications**: data leak, control flow diversion, check removed/bypassed, side channel, speculative execution vulnerabilities.

@@ -4,3 +4,8 @@ __pycache__/
 *.pyc
 *.log
 CISB-study.pdf
+.env
+*.json
+*.txt
+results/
+*.zip

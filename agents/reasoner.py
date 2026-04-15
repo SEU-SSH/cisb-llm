@@ -151,27 +151,27 @@ class Reasoner(Agent):
     def chatZS(self, report):
         client = OpenAI(api_key=self.API_KEY, base_url=self.URL)
         # print("reasoning...", self.model)
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=self.model,
-            messages=[
+            input=[
                 {"role": "system", "content": self.prompt},
                 {"role": "user", "content": str(report)},
             ],
-            # max_tokens=4096,
+            # max_output_tokens=4096,
             temperature=1.0,
             stream=False,
         )
 
-        # print(response.choices[0].message.content)
+        # print(response.output_text)
         print("Analysis finished.")
         return response
 
     def chatZS_stream(self, report):
         client = OpenAI(api_key=self.API_KEY, base_url=self.URL)
         # print("thinking...", self.model)
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=self.model,
-            messages=[
+            input=[
                 {"role": "system", "content": self.prompt},
                 {"role": "user", "content": str(report)},
             ],
@@ -180,7 +180,7 @@ class Reasoner(Agent):
             stream=True,
         )
 
-        # print(response.choices[0].message.content)
+        # print(response.output_text)
         print("Analysis finished.")
         return response
 
@@ -192,15 +192,15 @@ class Reasoner(Agent):
             messages.append(shot)
         messages.append({"role": "user", "content": str(report)})
 
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=self.model,
-            messages=messages,
-            max_tokens=4096,
+            input=messages,
+            max_output_tokens=4096,
             temperature=0.7,
             stream=False,
         )
 
-        # print(response.choices[0].message.content)
+        # print(response.output_text)
         print("Analysis finished.")
         return response
 

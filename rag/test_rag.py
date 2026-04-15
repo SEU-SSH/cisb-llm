@@ -5,15 +5,22 @@ Demonstrates: knowledge base ingestion -> query -> context retrieval.
 
 import sys
 import os
+import dotenv
 
 sys.path.insert(0, os.path.dirname(__file__))
 
 from embedder import Embedder
 from retriever import Retriever
+from reranker import Reranker
 
-API_KEY = ""
-BASE_URL = ""
-MODEL_NAME = ""
+dotenv.load_dotenv()
+
+API_KEY = os.getenv("RAG_API_KEY", "")
+BASE_URL = os.getenv("EMBEDDING_API_URL", "")
+MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "")
+RERANK_API_KEY = os.getenv("RAG_API_KEY", "")
+RERANK_BASE_URL = os.getenv("RERANK_API_URL") or os.getenv("RERANKING_API_URL", "")
+RERANK_MODEL_NAME = os.getenv("RERANK_MODEL_NAME") or os.getenv("RERANKING_MODEL_NAME", "")
 
 
 def run_test_query(retriever, query, top_k=3):
@@ -28,7 +35,10 @@ def run_test_query(retriever, query, top_k=3):
         return False
 
     for i, r in enumerate(results):
-        print(f"\n  Result {i + 1} (distance: {r['distance']:.4f}):")
+        score_text = (
+            f"rerank: {r['rerank_score']:.4f}" if r["rerank_score"] is not None else "rerank: N/A"
+        )
+        print(f"\n  Result {i + 1} (distance: {r['distance']:.4f}, {score_text}):")
         print(f"  Source: {r['source']} > {r['header']}")
         print(f"  Content preview:")
         preview = r["content"][:200].replace("\n", "\n    ")
@@ -70,7 +80,15 @@ def main():
     print("=" * 60)
 
     embedder = Embedder(api_key=API_KEY, base_url=BASE_URL, model_name=MODEL_NAME)
-    retriever = Retriever(embedder=embedder)
+    reranker = None
+    if RERANK_API_KEY and RERANK_BASE_URL and RERANK_MODEL_NAME:
+        reranker = Reranker(
+            api_key=RERANK_API_KEY,
+            base_url=RERANK_BASE_URL,
+            model_name=RERANK_MODEL_NAME,
+        )
+
+    retriever = Retriever(embedder=embedder, reranker=reranker)
 
     print("\n[Step 1] Ingesting knowledge base documents...")
     num_docs = retriever.ingest_knowledge_base()

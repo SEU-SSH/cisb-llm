@@ -1,14 +1,5 @@
 import os
 import chromadb
-from chromadb.api.types import EmbeddingFunction, Documents, Embeddings
-
-
-class ApiEmbeddingFunction(EmbeddingFunction):
-    def __init__(self, embedder):
-        self._embedder = embedder
-
-    def __call__(self, input: Documents) -> Embeddings:
-        return self._embedder.embed(input)
 
 
 class VectorStore:
@@ -35,23 +26,27 @@ class VectorStore:
 
         self.db_path = db_path
         self.collection_name = collection_name
-        self.embedding_fn = ApiEmbeddingFunction(embedder)
+        self.embedder = embedder
 
         self.client = chromadb.PersistentClient(path=self.db_path)
-        self.collection = self.client.get_or_create_collection(
-            name=self.collection_name,
-            embedding_function=self.embedding_fn,
-        )
+        # Do not bind collection-level embedding_function, because persisted
+        # collection configs can conflict across runs/providers.
+        try:
+            self.collection = self.client.get_collection(name=self.collection_name)
+        except Exception:
+            self.collection = self.client.create_collection(name=self.collection_name)
 
     def add_documents(self, docs, ids, metadatas=None):
-        kwargs = {"documents": docs, "ids": ids}
+        embeddings = self.embedder.embed(docs)
+        kwargs = {"documents": docs, "ids": ids, "embeddings": embeddings}
         if metadatas is not None:
             kwargs["metadatas"] = metadatas
         self.collection.upsert(**kwargs)
 
     def query(self, query_text, top_k=3):
+        query_embedding = self.embedder.embed([query_text])[0]
         results = self.collection.query(
-            query_texts=[query_text],
+            query_embeddings=[query_embedding],
             n_results=min(top_k, self.collection.count()),
         )
 
@@ -79,10 +74,7 @@ class VectorStore:
 
     def reset(self):
         self.client.delete_collection(self.collection_name)
-        self.collection = self.client.get_or_create_collection(
-            name=self.collection_name,
-            embedding_function=self.embedding_fn,
-        )
+        self.collection = self.client.create_collection(name=self.collection_name)
 
 
 if __name__ == "__main__":

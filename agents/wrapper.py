@@ -1,12 +1,12 @@
 from openai import OpenAI
 from digestor import Digestor
 from reasoner import Reasoner
-from evaluator import Evaluator
 from helper import Helper
 from time import sleep
 from os import system
 import json
-
+import dotenv
+import os
 
 class Wrapper:
     def __init__(
@@ -31,15 +31,16 @@ class Wrapper:
     def get_analysis(self, report):
         # self.digestor.gather_prompt()
         digest = self.digestor.chat(report)
-        # print(digest.choices[0].message.content)
+        # print(digest.output_text)
         # self.reasoner.ZS_RO()
+        digest_text = Helper().extract_response_text(digest)
         if self.reasoner.model == "deepseek-reasoner":
             response = self.reasoner.chatZS(
-                json.loads(digest.choices[0].message.content)
+                json.loads(digest_text)
             )
         else:
             response = self.reasoner.chatZS_stream(
-                json.loads(digest.choices[0].message.content)
+                json.loads(digest_text)
             )
         return response
 
@@ -59,13 +60,14 @@ class Wrapper:
 
 
 if __name__ == "__main__":
-    dmodel = "openrouter/moonshotai/kimi-k2.5"
+    dotenv.load_dotenv()
+    dmodel = os.getenv("DS_MODEL_NAME")
     # rmodel = ''
-    rmodel = "openrouter/moonshotai/kimi-k2.5"
-    url1 = "https://openrouter.ai/api/v1"
-    url2 = "https://openrouter.ai/api/v1"
-    API_KEY1 = ""
-    API_KEY2 = ""
+    rmodel = os.getenv("QWEN_MODEL_NAME")
+    url1 = os.getenv("DS_API_URL")
+    url2 = os.getenv("QWEN_API_URL")
+    API_KEY1 = os.getenv("DS_API_KEY")
+    API_KEY2 = os.getenv("QWEN_API_KEY")
     platform = "kernel"  # or 'kernel'
 
     # chater = Wrapper(dmodel, rmodel, None, API_KEY1, API_KEY1, url1, url1, platform)

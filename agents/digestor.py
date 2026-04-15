@@ -84,7 +84,7 @@ class Digestor(Agent):
             "w",
             encoding="utf-8",
         ) as f:
-            f.write(response.choices[0].message.content)
+            f.write(Helper().extract_response_text(response))
         print(
             f"Digested the input and generate results: {bug_id[:10] if self.platform == 'kernel' else bug_id}_digest.json"
         )

@@ -35,7 +35,7 @@ When analyzing whether a bug report reveals a Compiler-Introduced Security Bug (
 
 ### 3. Undefined Behavior (UB)
 
-**Definition**: Undefined Behavior is behavior for which the language standard **imposes no requirements**. When a program triggers UB, the standard places no constraints on what the implementation may do.
+**Definition**: Undefined Behavior is behavior for which the language standard **imposes no requirements**. So triggerring UB is not necessarily violating language specifications. 
 
 **Critical Nuances**:
 - **UB is NOT necessarily a programming error.** Do not assume that all UB cases indicate programming errors. UB exists on a spectrum.
@@ -64,17 +64,3 @@ When analyzing whether a bug report reveals a Compiler-Introduced Security Bug (
 - Specific compiler version behaviors
 
 **Relevance to CISB**: If a bug report indicates that the issue is caused by external factors such as hardware, environment, or configuration — rather than compiler optimization — then it is **not** a CISB. Environment assumptions help distinguish between platform bugs and compiler-introduced bugs.
-
-## Decision Framework
-
-When classifying a bug, apply these distinctions in order:
-
-1. **Is it a programming error?** Check if the code explicitly violates the language specification. If yes → NOT a CISB.
-
-2. **Is it caused by environment factors?** Check if the issue stems from hardware, OS, or configuration rather than compiler optimization. If yes → NOT a CISB.
-
-3. **Does it involve UB?** If so, determine: does the UB cause security issues even without optimization? If yes → Programming error, NOT a CISB. If the security issue only emerges after compiler optimization exploits the UB → may be a CISB.
-
-4. **Is it caused by compiler optimization or default behavior?** Verify that the behavioral difference requires optimization/default behavior to manifest. If yes → potential CISB.
-
-5. **Does the behavioral change have security implications?** Confirm that the optimization-induced difference damages security in the specific context. If yes → CISB.
