@@ -33,13 +33,12 @@ cisb-llm/
 │   ├── agent.py             # Abstract base class for all agents
 │   ├── digestor.py          # Extracts/structures bug report information
 │   ├── reasoner.py          # Analyzes code for CISB using chain-of-thought
-│   ├── evaluator.py         # Validates reasoning (deprecated)
 │   ├── helper.py            # File I/O utility class
 │   └── wrapper.py           # Orchestrator: Digestor -> Reasoner pipeline
 ├── datasets/                # Bug IDs and scraped bug report JSON data
 │   ├── Todos/               # Active datasets (bug_ids.txt, bug_reports.json)
 │   └── backups/             # Backup copies
-├── results/                 # Evaluation criteria (criteria.md)
+├── results/                 # Evaluation results
 ├── scratch.py               # GCC Bugzilla scraper
 ├── llvm_scratch.py          # LLVM GitHub Issues scraper
 ├── kernel_api.py            # Linux kernel commit fetcher (GitHub API)
@@ -149,7 +148,6 @@ def strip_redundant_lines(commit_msg: str) -> str:
 - Inline comments are bilingual (Chinese and English).
 - Section separators use `# === 标题 ===` style in some files.
 - Commented-out dead code is common throughout.
-- README and evaluation criteria (`results/criteria.md`) are written in Chinese.
 
 ### Formatting
 

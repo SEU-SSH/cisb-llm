@@ -1,7 +1,14 @@
 import os
-import dotenv
-from vector_store import VectorStore
-from reranker import Reranker
+try:
+    from .vector_store import VectorStore
+    from .reranker import Reranker
+except ImportError:
+    from vector_store import VectorStore
+    from reranker import Reranker
+try:
+    import dotenv
+except ImportError:  # pragma: no cover - optional for __main__ usage.
+    dotenv = None
 
 
 class Retriever:
@@ -161,9 +168,13 @@ class Retriever:
 
 
 if __name__ == "__main__":
-    from embedder import Embedder
+    try:
+        from .embedder import Embedder
+    except ImportError:
+        from embedder import Embedder
 
-    dotenv.load_dotenv()
+    if dotenv is not None:
+        dotenv.load_dotenv()
     API_KEY = os.getenv("RAG_API_KEY")
     BASE_URL = os.getenv("EMBEDDING_API_URL")
     MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME")

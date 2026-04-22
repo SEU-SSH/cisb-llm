@@ -1,7 +1,10 @@
 import os
 
 from openai import OpenAI
-import dotenv
+try:
+    import dotenv
+except ImportError:  # pragma: no cover - optional for __main__ usage.
+    dotenv = None
 
 
 class Embedder:
@@ -71,7 +74,8 @@ class Embedder:
 
 
 if __name__ == "__main__":
-    dotenv.load_dotenv() 
+    if dotenv is not None:
+        dotenv.load_dotenv()
     API_KEY = os.getenv("RAG_API_KEY")
     BASE_URL = os.getenv("EMBEDDING_API_URL")
     MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME")
