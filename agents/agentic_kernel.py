@@ -439,6 +439,13 @@ class ReasonerAgent(KernelAgent):
     def __init__(self, model, api_key, url):
         super().__init__(model, REASONER_PROMPT, api_key, url)
 
+    @staticmethod
+    def _has_digest_context_review(state):
+        return any(
+            entry.get("action") == "review_digest_context"
+            for entry in state.tool_history
+        )
+
     def _heuristic_answer(self, question_id, state):
         message = (state.cache.get("message") or "").lower()
         compiler_behavior = (state.digest.get("compiler_behavior") or "").lower()
@@ -555,6 +562,16 @@ class ReasonerAgent(KernelAgent):
             state.errors.append(f"Reasoner fallback: {exc}")
             return validate_reasoner_action(self._heuristic_next_action(state))
 
+        if not state.initial_impression:
+            return {"action": "build_initial_impression"}
+
+        if digest_contexts and not self._has_digest_context_review(state):
+            if action.get("action") != "review_digest_context":
+                return {
+                    "action": "review_digest_context",
+                    "file_path": digest_contexts[0].get("file_path"),
+                }
+
         return validate_reasoner_action(action)
 
 
@@ -584,21 +601,6 @@ class JudgeAgent(KernelAgent):
             "security_implications": answers["q5"]["reason"],
         }
 
-        spec = {
-            "trigger_condition": state.digest.get("previous_issue", ""),
-            "broken_security_property": answers["q5"]["reason"],
-            "compiler_behavior": state.digest.get("compiler_behavior", ""),
-            "affected_code_pattern": ", ".join(
-                context.get("file_path", "")
-                for context in state.digest.get("focused_contexts", [])
-            ),
-            "evidence": [
-                item.get("note") or item.get("content", "")
-                for items in state.evidence_ledger.values()
-                for item in items[:1]
-            ][:5],
-        }
-
         title = ""
         raw_message = state.raw_report.get("message", "") if state.raw_report else ""
         cache_message = state.cache.get("message", "")
@@ -619,7 +621,6 @@ class JudgeAgent(KernelAgent):
             "step_analysis": step_analysis,
             "binary_answers": answers,
             "cisb_status": cisb_status,
-            "spec": spec,
         }
 
     def run(self, state):
@@ -648,7 +649,6 @@ class JudgeAgent(KernelAgent):
         decision.setdefault("issue", fallback["issue"])
         decision.setdefault("title", fallback["title"])
         decision.setdefault("cisb_status", fallback["cisb_status"])
-        decision.setdefault("spec", fallback["spec"])
         return decision
 
 
@@ -967,11 +967,20 @@ class KernelToolRegistry:
 
 def render_analysis_markdown(decision):
     lines = [
-        f"**Title**: {decision.get('title', '')}",
-        f"**Issue**: {decision.get('issue', '')}",
-        f"**Tag**: {decision.get('tag', '')}",
-        f"**Purpose**: {decision.get('purpose', '')}",
-        "---",
+        "# CISB Analysis Report",
+        "",
+        "**Title**",
+        decision.get("title", ""),
+        "",
+        "**Issue**",
+        decision.get("issue", ""),
+        "",
+        "**Tag**",
+        decision.get("tag", ""),
+        "",
+        "**Purpose**",
+        decision.get("purpose", ""),
+        "\n---",
         "",
         "### Step-by-Step Analysis:",
         f"1. **Key Variables/Functionality**: {decision.get('step_analysis', {}).get('key_variables_functionality', '')}",
@@ -989,24 +998,47 @@ def render_analysis_markdown(decision):
         lines.append(f"{idx}. [{answer}] {QUESTION_TEXT[question_id]} {reason}".strip())
 
     lines.append("")
-    lines.append(f"**CISB Status**: {decision.get('cisb_status', 'no')}")
+    lines.append("**CISB Status**")
+    lines.append(str(decision.get("cisb_status", "no")))
     return "\n".join(lines).strip() + "\n"
 
+def build_persisted_digest_view(digest, cache):
+    slice_lookup = {}
+    for file_entry in cache.get("files", []):
+        for focus_slice in file_entry.get("focus_slices", []):
+            slice_lookup[(focus_slice.get("file_path"), focus_slice.get("slice_id"))] = focus_slice
 
-def render_spec_markdown(decision):
-    spec = decision.get("spec", {}) or {}
-    lines = [
-        f"# Draft Spec for {decision.get('title', 'kernel commit')}",
-        "",
-        f"- Trigger condition: {spec.get('trigger_condition', '')}",
-        f"- Broken security property: {spec.get('broken_security_property', '')}",
-        f"- Compiler behavior: {spec.get('compiler_behavior', '')}",
-        f"- Affected code pattern: {spec.get('affected_code_pattern', '')}",
-        "- Evidence:",
-    ]
-    for item in spec.get("evidence", []):
-        lines.append(f"  - {item}")
-    return "\n".join(lines).strip() + "\n"
+    focused_contexts = []
+    for context in digest.get("focused_contexts", []):
+        resolved = slice_lookup.get((context.get("file_path"), context.get("slice_id")))
+        focused_contexts.append(
+            {
+                "file_path": context.get("file_path"),
+                "reason": context.get("reason"),
+                "slice_content": resolved.get("content") if resolved else "(slice content unavailable)",
+            }
+        )
+
+    return {
+        "function_contexts": digest.get("function_contexts", []),
+        "focused_contexts": focused_contexts,
+    }
+
+
+def render_persisted_analysis(decision, digest, cache):
+    judge_markdown = render_analysis_markdown(decision).rstrip()
+    digest_json = json.dumps(
+        build_persisted_digest_view(digest, cache),
+        ensure_ascii=False,
+        indent=2,
+    )
+    return (
+        judge_markdown
+        + "\n\n---\n\n"
+        + "## Digest JSON\n\n```json\n"
+        + digest_json
+        + "\n```\n"
+    )
 
 
 class AgenticKernelOrchestrator:
@@ -1029,6 +1061,7 @@ class AgenticKernelOrchestrator:
         judge_agent=None,
         max_steps=12,
         total_action_limit=40,
+        persist_options=None,
     ):
         self.helper = Helper()
         self.output_dir = output_dir or os.getcwd()
@@ -1042,6 +1075,13 @@ class AgenticKernelOrchestrator:
         self.judge = judge_agent or JudgeAgent(rmodel, api_key2, url2)
         self.max_steps = max_steps
         self.total_action_limit = total_action_limit
+        self.persist_options = {
+            "analysis": True,
+            "trace": True,
+            "digest": False,
+        }
+        if persist_options:
+            self.persist_options.update(persist_options)
 
     def _build_retriever(self):
         try:
@@ -1169,14 +1209,17 @@ class AgenticKernelOrchestrator:
 
     def persist(self, state):
         stem = self.helper.normalize_report_id(state.commit_id)
-        analysis_path = os.path.join(state.output_dir, f"{stem}_analysis.md")
+        bucket = "P" if state.final_decision.get("cisb_status") == "yes" else "N"
+        analysis_path = os.path.join(state.output_dir, bucket, f"{stem}_analysis.md")
         trace_path = os.path.join(state.output_dir, f"{stem}_trace.json")
-        spec_path = os.path.join(state.output_dir, f"{stem}_spec.md")
+        digest_path = os.path.join(state.output_dir, f"{stem}_digest.json")
 
-        self.helper.write_text(analysis_path, state.final_decision["analysis_markdown"])
-        self.helper.write_json(trace_path, state.to_trace())
-        if state.final_decision.get("cisb_status") == "yes":
-            self.helper.write_text(spec_path, state.final_decision["spec_markdown"])
+        if self.persist_options.get("analysis", False):
+            self.helper.write_text(analysis_path, state.final_decision["analysis_markdown"])
+        if self.persist_options.get("trace", False):
+            self.helper.write_json(trace_path, state.to_trace())
+        if self.persist_options.get("digest", False):
+            self.helper.write_json(digest_path, state.digest)
 
     def run(self, commit_id, seed_report=None, persist=True):
         state = self._prepare_state(commit_id, seed_report)
@@ -1194,8 +1237,11 @@ class AgenticKernelOrchestrator:
             }
         self._run_reasoner_loop(state)
         decision = self.judge.run(state)
-        decision["analysis_markdown"] = render_analysis_markdown(decision)
-        decision["spec_markdown"] = render_spec_markdown(decision)
+        decision["analysis_markdown"] = render_persisted_analysis(
+            decision,
+            state.digest,
+            state.cache,
+        )
         state.final_decision = decision
         if persist:
             self.persist(state)

@@ -54,6 +54,7 @@ def _normalize_file_entry(filename, patch_text="", metadata=None):
     patch_text = patch_text or ""
     return {
         "filename": filename,
+        "previous_filename": metadata.get("previous_filename"),
         "status": metadata.get("status", "modified"),
         "patch": patch_text,
         "changes": metadata.get("changes", count_patch_lines(patch_text)),
@@ -82,6 +83,7 @@ def normalize_seed_commit(seed_data, commit_sha=None):
 
     return {
         "id": commit_sha or seed_data.get("id"),
+        "parent_id": seed_data.get("parent_id"),
         "year": seed_data.get("year"),
         "message": message,
         "files": files,
@@ -104,6 +106,11 @@ def normalize_commit_bundle(commit_data):
 
     return {
         "id": commit_data.get("sha"),
+        "parent_id": (
+            commit_data.get("parents", [{}])[0].get("sha")
+            if commit_data.get("parents")
+            else None
+        ),
         "year": commit_year,
         "message": strip_redundant_lines(
             commit_data.get("commit", {}).get("message", "")
@@ -122,6 +129,7 @@ def merge_commit_bundles(primary, fallback):
     merged = dict(primary)
     merged["message"] = primary.get("message") or fallback.get("message", "")
     merged["year"] = primary.get("year") or fallback.get("year")
+    merged["parent_id"] = primary.get("parent_id") or fallback.get("parent_id")
 
     file_map = {}
     for source_bundle in (fallback, primary):
@@ -385,9 +393,9 @@ def build_file_focus_slice(
     commit_sha,
     file_path,
     patch_text,
-    line_budget=160,
+    line_budget=80,
     file_content=None,
-    context_lines=20,
+    context_lines=10,
     max_slices=3,
 ):
     hunks = parse_patch_hunks(patch_text)
@@ -410,11 +418,11 @@ def build_file_focus_slice(
 
     for idx, hunk in enumerate(hunks[:max_slices]):
         if lines:
-            center_line = max(1, hunk["new_start"])
+            center_line = max(1, hunk["old_start"])
             window_start = max(1, center_line - context_lines)
             window_end = min(
                 len(lines),
-                center_line + max(hunk["new_len"], 1) + context_lines,
+                center_line + max(hunk["old_len"], 1) + context_lines,
             )
 
             signature_start = _find_signature_start(lines, window_start - 1)
@@ -612,8 +620,8 @@ def load_commit_cache(commit_sha, cache_dir=DEFAULT_CACHE_DIR):
 def prepare_commit_cache(commit_sha, policy=None, cache_dir=DEFAULT_CACHE_DIR, seed_data=None, scheduler=None):
     policy = dict(
         {
-            "line_budget": 160,
-            "context_lines": 20,
+            "line_budget": 80,
+            "context_lines": 10,
             "max_files": 3,
             "max_slices": 3,
             "fetch_snapshots": True,
@@ -644,16 +652,23 @@ def prepare_commit_cache(commit_sha, policy=None, cache_dir=DEFAULT_CACHE_DIR, s
     digest_contexts = []
     for file_entry in files:
         filename = file_entry["filename"]
+        snapshot_ref = bundle.get("parent_id") or commit_sha
+        snapshot_path = (
+            file_entry.get("previous_filename")
+            if file_entry.get("status") == "renamed" and file_entry.get("previous_filename")
+            else filename
+        )
         fetch_snapshot = (
             policy.get("fetch_snapshots", True)
             and scheduler is not None
             and filename in prioritized_files
+            and file_entry.get("status") != "added"
         )
         snapshot = ""
         snapshot_error = None
         if fetch_snapshot:
             try:
-                snapshot = scheduler.fetch_file_snapshot(commit_sha, filename)
+                snapshot = scheduler.fetch_file_snapshot(snapshot_ref, snapshot_path)
             except Exception as exc:
                 snapshot_error = str(exc)
 
@@ -697,6 +712,8 @@ def prepare_commit_cache(commit_sha, policy=None, cache_dir=DEFAULT_CACHE_DIR, s
                 "outline": outline,
                 "digest_context": digest_context,
                 "snapshot": snapshot,
+                "snapshot_ref": snapshot_ref if snapshot else None,
+                "snapshot_path": snapshot_path if snapshot else None,
                 "snapshot_error": snapshot_error,
             }
         )
@@ -705,6 +722,7 @@ def prepare_commit_cache(commit_sha, policy=None, cache_dir=DEFAULT_CACHE_DIR, s
 
     cache_payload = {
         "id": bundle.get("id"),
+        "parent_id": bundle.get("parent_id"),
         "year": bundle.get("year"),
         "message": bundle.get("message", ""),
         "source": bundle.get("source"),

@@ -175,13 +175,6 @@ class FakeJudge:
                 for question_id in QUESTION_TEXT
             },
             "cisb_status": "no",
-            "spec": {
-                "trigger_condition": "",
-                "broken_security_property": "",
-                "compiler_behavior": "",
-                "affected_code_pattern": "",
-                "evidence": [],
-            },
         }
 
 
@@ -275,6 +268,23 @@ class AgenticKernelTests(unittest.TestCase):
             self.assertEqual(result["source_type"], "initial_impression")
             self.assertTrue(state.initial_impression["content"].startswith("Knowledge answer for:"))
             self.assertEqual(state.last_observation["source_type"], "initial_impression")
+
+    def test_reasoner_heuristic_starts_with_initial_impression(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            state = KernelRunState(
+                commit_id="abc123def456",
+                raw_report={"id": "abc123def456"},
+                cache=make_cache(),
+                cache_path=os.path.join(tmpdir, "abc123def456.json"),
+                output_dir=tmpdir,
+                digest=FakeDigestor().run(None),
+            )
+            from agentic_kernel import ReasonerAgent
+
+            reasoner = ReasonerAgent(None, None, None)
+            action = reasoner.next_action(state)
+
+            self.assertEqual(action["action"], "build_initial_impression")
 
     def test_review_digest_context_returns_digest_summary(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -438,6 +448,58 @@ class AgenticKernelTests(unittest.TestCase):
             self.assertEqual(state.termination_reason, "completed")
             self.assertEqual(state.question_answers["q1"]["answer"], "yes")
             self.assertEqual(state.question_answers["q2"]["answer"], "no")
+
+    def test_persist_writes_analysis_into_bucket_with_digest_and_no_spec(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            orchestrator = AgenticKernelOrchestrator(
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                output_dir=tmpdir,
+                judge_agent=FakeJudge(),
+                persist_options={"analysis": True, "trace": True, "digest": False},
+            )
+            state = KernelRunState(
+                commit_id="abc123def456",
+                raw_report={"id": "abc123def456"},
+                cache=make_cache(),
+                cache_path=os.path.join(tmpdir, "abc123def456.json"),
+                output_dir=tmpdir,
+                digest=FakeDigestor().run(None),
+            )
+            state.final_decision = FakeJudge().run(state)
+            from agentic_kernel import render_persisted_analysis
+
+            state.final_decision["analysis_markdown"] = render_persisted_analysis(
+                state.final_decision,
+                state.digest,
+                state.cache,
+            )
+
+            orchestrator.persist(state)
+
+            analysis_path = os.path.join(tmpdir, "N", "abc123def4_analysis.md")
+            trace_path = os.path.join(tmpdir, "abc123def4_trace.json")
+            spec_path = os.path.join(tmpdir, "abc123def4_spec.md")
+
+            self.assertTrue(os.path.exists(analysis_path))
+            self.assertTrue(os.path.exists(trace_path))
+            self.assertFalse(os.path.exists(spec_path))
+
+            with open(analysis_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            self.assertTrue(content.startswith("# CISB Analysis Report"))
+            self.assertIn("**Title**\n", content)
+            self.assertIn("**Issue**\n", content)
+            self.assertIn("**CISB Status**\nno", content)
+            self.assertIn("## Digest JSON", content)
+            self.assertIn("\"function_contexts\":", content)
+            self.assertIn("\"focused_contexts\":", content)
+            self.assertIn("\"slice_content\":", content)
+            self.assertNotIn("\"previous_issue\":", content)
 
 
 if __name__ == "__main__":

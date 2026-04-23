@@ -161,6 +161,45 @@ class KernelApiTests(unittest.TestCase):
         self.assertIn("member_address_is_nonnull", slices[0]["content"])
         self.assertLessEqual(len(slices[0]["content"].splitlines()), 5)
 
+    def test_build_file_focus_slice_uses_pre_patch_old_start(self):
+        file_content = "\n".join(
+            [
+                "line 1",
+                "line 2",
+                "line 3",
+                "line 4",
+                "line 5",
+                "line 6",
+                "line 7",
+                "line 8",
+            ]
+        )
+        patch = "\n".join(
+            [
+                "@@ -2,2 +5,3 @@ static void foo(void)",
+                "-line 2",
+                "-line 3",
+                "+line 5",
+                "+line 5.1",
+                "+line 6",
+            ]
+        )
+
+        slices = build_file_focus_slice(
+            "deadbeef",
+            "kernel/file.c",
+            patch,
+            line_budget=6,
+            file_content=file_content,
+            context_lines=0,
+            max_slices=1,
+        )
+
+        content = slices[0]["content"]
+        self.assertIn("    2 line 2", content)
+        self.assertIn("    3 line 3", content)
+        self.assertNotIn("    5 line 5", content)
+
     def test_build_file_focus_slice_falls_back_to_patch_hunks(self):
         patch = "\n".join(
             [
@@ -233,6 +272,50 @@ class KernelApiTests(unittest.TestCase):
                 "Changed symbols:",
                 cache["digest_contexts"][0]["summary"],
             )
+
+    def test_prepare_commit_cache_fetches_parent_snapshot(self):
+        seed_report = {
+            "id": "abc123",
+            "parent_id": "parent456",
+            "year": "2024",
+            "message": "foo: fix compiler-induced loop\n\nClang made the loop infinite.",
+            "patches": {
+                "drivers/foo.c": "\n".join(
+                    [
+                        "@@ -2,2 +2,2 @@ static int foo(void)",
+                        "-\treturn 0;",
+                        "+\treturn 1;",
+                    ]
+                )
+            },
+        }
+
+        class RecordingScheduler:
+            def __init__(self):
+                self.calls = []
+                self.rate_limit = {}
+
+            def fetch_commit_info(self, commit_sha):
+                raise AssertionError("seed data should satisfy commit bundle in this test")
+
+            def fetch_file_snapshot(self, commit_sha, file_path):
+                self.calls.append((commit_sha, file_path))
+                return "static int foo(void)\n{\n\treturn 0;\n}\n"
+
+        scheduler = RecordingScheduler()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache = prepare_commit_cache(
+                "abc123",
+                cache_dir=tmpdir,
+                seed_data=seed_report,
+                scheduler=scheduler,
+                policy={"fetch_snapshots": True},
+            )
+
+            self.assertEqual(scheduler.calls, [("parent456", "drivers/foo.c")])
+            self.assertEqual(cache["parent_id"], "parent456")
+            self.assertEqual(cache["files"][0]["snapshot_ref"], "parent456")
 
 
 if __name__ == "__main__":

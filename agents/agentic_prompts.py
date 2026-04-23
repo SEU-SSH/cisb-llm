@@ -97,7 +97,6 @@ Rules:
 - Stay grounded in the digest and evidence ledger.
 - If a question lacks evidence, keep it as unknown or no, but explain the gap.
 - CISB status is yes only if q1-q5 are all yes.
-- If CISB status is yes, produce a draft spec payload.
 
 Return JSON with this exact shape:
 {
@@ -118,13 +117,6 @@ Return JSON with this exact shape:
     "q4": {"answer":"yes|no|unknown","reason":"string"},
     "q5": {"answer":"yes|no|unknown","reason":"string"}
   },
-  "cisb_status": "yes|no",
-  "spec": {
-    "trigger_condition": "string",
-    "broken_security_property": "string",
-    "compiler_behavior": "string",
-    "affected_code_pattern": "string",
-    "evidence": ["string"]
-  }
+  "cisb_status": "yes|no" 
 }
 """

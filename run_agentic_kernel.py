@@ -86,7 +86,19 @@ def build_runner(args):
         scheduler=scheduler,
         max_steps=args.stall_limit,
         total_action_limit=args.total_action_limit,
+        persist_options=resolve_persistence_options(args),
     )
+
+
+def resolve_persistence_options(args):
+    analysis = True if args.persist_analysis is None else args.persist_analysis
+    trace = (True if args.debug else False) if args.persist_trace is None else args.persist_trace
+    digest = False if args.persist_digest is None else args.persist_digest
+    return {
+        "analysis": analysis,
+        "trace": trace,
+        "digest": digest,
+    }
 
 
 def write_error_log(path, failures):
@@ -171,6 +183,29 @@ def build_parser():
         help="Path for JSON failure log. Default: errors.log",
     )
     parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug defaults. In debug mode, analysis and trace persistence default to on.",
+    )
+    parser.add_argument(
+        "--persist-analysis",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Enable or disable analysis markdown persistence.",
+    )
+    parser.add_argument(
+        "--persist-trace",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Enable or disable trace JSON persistence.",
+    )
+    parser.add_argument(
+        "--persist-digest",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Enable or disable standalone digest JSON persistence.",
+    )
+    parser.add_argument(
         "--stall-limit",
         type=int,
         default=12,
@@ -212,6 +247,7 @@ def main(argv=None):
 
     runner = build_runner(args)
     print(f"Using Retriever: {type(runner.retriever).__name__ if runner.retriever else 'None'}")
+    print(f"Persistence: {json.dumps(resolve_persistence_options(args), ensure_ascii=False)}")
     summaries, failures = run_targets(
         runner,
         commit_ids,
