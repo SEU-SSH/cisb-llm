@@ -67,6 +67,7 @@ Optional fallback actions only if the digest explicitly lacks enough evidence:
 - {"action":"get_file_outline","file_path":"..."}
 
 Constraints:
+- Query Librarian to understand what CISB means if you do not clearly understand it.
 - First build a CISB-oriented initial impression from previous_issue, patching_purpose, and compiler_behavior by using build_initial_impression. This is mandatory before answering the five questions.
 - build_initial_impression should give you a high-level CISB framing: what CISB means here, which distinctions matter, and what to watch for.
 - The digest already contains diff-local function contexts and symbol summaries. Use review_digest_context to inspect digest contexts along the main reasoning line before falling back to patch/file tools.
