@@ -1,0 +1,4 @@
+name: cisb-llm/l-35-env-implicit-read-between-2-stores
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0

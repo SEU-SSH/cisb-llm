@@ -34,5 +34,6 @@ Grounding requirements:
 - The query must stay consistent with the CISB definition and distinctions.
 - Do not collapse a plain programming error into a CISB query.
 - Preserve necessary control-flow, scope, and environment assumptions when they materially affect the bug pattern.
+- After generating QL code, must check the syntax, exclude the APIs not in CodeQL.
 
 Output JSON only. Do not output Markdown, commentary, or code fences.

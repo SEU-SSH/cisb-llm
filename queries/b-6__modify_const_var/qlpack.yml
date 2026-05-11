@@ -1,0 +1,4 @@
+name: cisb-llm/b-6-modify-const-var
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0

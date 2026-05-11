@@ -1,0 +1,4 @@
+name: cisb-llm/l-41-env-implicit-change-between-2-same-check
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0

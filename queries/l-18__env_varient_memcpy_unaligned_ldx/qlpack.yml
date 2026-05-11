@@ -1,0 +1,4 @@
+name: cisb-llm/l-18-env-varient-memcpy-unaligned-ldx
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0

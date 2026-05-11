@@ -1,6 +1,10 @@
 .venv/
 rag/vector_db/
 .kernel_cache/
+codeql-databases/
+queries/**/.codeql-db*/
+queries/**/.codeql-build.sh
+queries/**/.codeql-objs/
 __pycache__/
 *.pyc
 *.log
@@ -11,3 +15,4 @@ CISB-study.pdf
 results/
 *.zip
 *.codex
+*codeql/*

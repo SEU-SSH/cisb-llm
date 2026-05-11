@@ -1,0 +1,2 @@
+"rcu","col1"
+"... = ...","Vulnerable assignment to shared/hardware memory without atomic protection"

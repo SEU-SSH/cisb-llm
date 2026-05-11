@@ -1,0 +1,4 @@
+name: cisb-llm/l-13-ub-pointer-offset-overflow
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0

@@ -1,0 +1,4 @@
+name: cisb-llm/l-30-ub-concurrency-access-to-global-between-2-func-call-which-contains-access-to-same-global
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0

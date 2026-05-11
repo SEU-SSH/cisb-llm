@@ -1,0 +1,4 @@
+name: cisb-llm/l-43-env-built-in-replace
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0

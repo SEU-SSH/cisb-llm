@@ -1,0 +1,4 @@
+name: cisb-llm/l-29-part-of-union-not-init
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0

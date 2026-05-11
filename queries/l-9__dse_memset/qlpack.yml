@@ -1,0 +1,4 @@
+name: cisb-llm/l-9-dse-memset
+version: 0.0.0
+dependencies:
+  codeql/cpp-all: 7.0.0
